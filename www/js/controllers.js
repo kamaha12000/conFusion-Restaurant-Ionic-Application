@@ -72,6 +72,12 @@ angular.module('conFusion.controllers', [])
     }, 1000);
   }; 
 
+
+
+
+
+
+
 })
 
 .controller('MenuController', ['$scope', 'menuFactory', 'favoriteFactory', 'baseURL', '$ionicListDelegate', function ($scope, menuFactory, favoriteFactory, baseURL, $ionicListDelegate) {
@@ -159,7 +165,7 @@ angular.module('conFusion.controllers', [])
             };
         }])
 
-.controller('DishDetailController', ['$scope', '$stateParams', 'menuFactory', 'baseURL', function($scope, $stateParams, menuFactory, baseURL) {
+.controller('DishDetailController', ['$scope', '$stateParams', 'menuFactory', 'favoriteFactory', 'baseURL', '$ionicPopover', '$ionicModal', function($scope, $stateParams, menuFactory, favoriteFactory, baseURL, $ionicPopover, $ionicModal) {
             
             $scope.baseURL = baseURL;
             $scope.dish = {};
@@ -176,6 +182,74 @@ angular.module('conFusion.controllers', [])
                                 $scope.message = "Error: "+response.status + " " + response.statusText;
                             }
             );
+
+
+
+
+            //Create the comment modal that will be use to collect comment from user
+$ionicModal.fromTemplateUrl('templates/dish-comment.html', {
+    scope: $scope,
+    animation: 'slide-in-up'
+  }).then(function(modal) {
+    $scope.commentForm = modal;
+  });
+
+// Triggered in the comment modal to close it
+  $scope.closeCommentModal = function() {
+    $scope.commentForm.hide();
+    $scope.closePopover();
+  };
+
+    // Open the comment modal
+  $scope.openCommentModal = function() {
+    $scope.commentForm.show();
+  };
+
+  $scope.mycomment = { rating: 5, comment: "", author: "", date: "" };
+
+    // Perform the comment action when the user submits the comment form
+  $scope.submitComment = function() {
+      $scope.mycomment.date = new Date().toISOString();
+      $scope.dish.comments.push($scope.mycomment);
+      menuFactory.getDishes().update({ id: $scope.dish.id }, $scope.dish);
+      $scope.closeModal();
+      $scope.closePopover();
+  }; 
+
+
+
+
+
+
+
+
+
+
+              $ionicPopover.fromTemplateUrl('templates/dish-detail-popover.html', {
+                scope: $scope
+              }).then(function(popover){
+                $scope.popover = popover;
+              });
+
+              $scope.openPopover = function($event){
+                $scope.popover.show($event);
+              };
+
+              $scope.closePopover = function($event){
+                $scope.popover.hide();
+              }
+
+              $scope.addFavorite = function () {
+                favoriteFactory.addToFavorites($scope.dish.id);
+                $scope.closePopover();
+              };
+
+
+
+
+
+
+            
 
             
         }])
